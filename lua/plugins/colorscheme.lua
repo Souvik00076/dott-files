@@ -10,6 +10,8 @@
 --     end,
 --   },
 -- }
+
+--End of solarized-osaka
 --
 -- return {
 --   -- add gruvbox
@@ -24,7 +26,21 @@
 --   },
 -- }
 
-return { "ellisonleao/gruvbox.nvim", priority = 1000, config = true, opts = ... }
+-- End of gruvbox
+--
+-- return {
+--   "scottmckendry/cyberdream.nvim",
+--   lazy = false,
+--   config = true,
+--   priority = 1000,
+--   opts = {
+--     transparent = false,
+--   },
+-- }
+
+-- End of cyber dream
+-- return { "ellisonleao/gruvbox.nvim", priority = 1000, config = true, opts = ... }
+
 -- return {
 --   { "nyoom-engineering/oxocarbon.nvim" },
 --   {
@@ -33,4 +49,23 @@ return { "ellisonleao/gruvbox.nvim", priority = 1000, config = true, opts = ... 
 --       colorscheme = "oxocarbon",
 --     },
 --   },
+-- }
+--
+
+--end of oxocarbon
+
+return {
+  "rose-pine/neovim",
+  name = "rose-pine",
+  config = function()
+    vim.cmd("colorscheme rose-pine")
+  end,
+}
+--
+-- return {
+--   "rebelot/kanagawa.nvim",
+--   name = "kanagawa",
+--   config = function()
+--     vim.cmd("colorscheme kanagawa-wave")
+--   end,
 -- }
