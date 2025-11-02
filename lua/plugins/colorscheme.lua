@@ -1,15 +1,15 @@
--- return {
---   {
---     "craftzdog/solarized-osaka.nvim",
---     lazy = true,
---     priority = 1000,
---     opts = function()
---       return {
---         transparent = true,
---       }
---     end,
---   },
--- }
+return {
+  {
+    "craftzdog/solarized-osaka.nvim",
+    lazy = true,
+    priority = 1000,
+    opts = function()
+      return {
+        transparent = false,
+      }
+    end,
+  },
+}
 
 --End of solarized-osaka
 --
@@ -27,12 +27,12 @@
 -- }
 
 --return { "ellisonleao/gruvbox.nvim", priority = 1000, config = true, opts = ... }
-return {
-  { "nyoom-engineering/oxocarbon.nvim" },
-  {
-    "LazyVim/LazyVim",
-    opts = {
-      colorscheme = "oxocarbon",
-    },
-  },
-}
+-- return {
+--   { "nyoom-engineering/oxocarbon.nvim" },
+--   {
+--     "LazyVim/LazyVim",
+--     opts = {
+--       colorscheme = "oxocarbon",
+--     },
+--   },
+-- }

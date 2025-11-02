@@ -1,111 +1,128 @@
+-- Configuration for the CodeCompanion Neovim plugin.
+
+-- Main plugin configuration
+
 return {
   "olimorris/codecompanion.nvim",
+  -- Plugin dependencies
+
   dependencies = {
     "ravitemer/mcphub.nvim",
   },
+  -- Plugin options
+
   opts = {
+    -- Display related settings
+
     display = {
+      -- Diff display settings
+
+      diff = {
+        enabled = true,
+      },
+      -- Chat display settings
+
       chat = {
+        show_settings = true,
+        -- Chat window layout
+
         window = {
-          layout = "vertical", -- float|vertical|horizontal|buffer
-          position = "right", -- left|right|top|bottom
-          border = "rounded", -- single|double|rounded|solid|shadow|none
-          width = 0.4, -- percentage (0.0-1.0) or absolute number
-          height = 1.0,
-          relative = "editor", -- editor|cursor|win
-          full_height = true, -- when false, uses vsplit instead of botright/topleft vsplit
-          sticky = false,
-          opts = {
-            breakindent = true, -- indent wrapped lines
-            cursorcolumn = false, -- highlight cursor column
-            cursorline = false, -- highlight cursor line
-            foldcolumn = "0", -- width of fold column
-            linebreak = true, -- break lines at word boundaries
-            list = false, -- show invisible characters
-            numberwidth = 1, -- width of number column
-            signcolumn = "no", -- show sign column (yes|no|auto)
-            spell = false, -- spell checking
-            wrap = true, -- wrap long lines
-            number = false, -- show line numbers
-            relativenumber = false, -- show relative line numbers
-          },
+          layout = "float", -- Make chat window float too
+          border = "rounded",
+          width = 0.8,
+          height = 0.8,
+          style = "minimal",
         },
-        icons = {
-          buffer_pin = "📌 ", -- icon for pinned buffers
-          buffer_watch = "👀 ", -- icon for watched buffers
-          chat_context = "📎 ", -- icon for context fold
-          chat_fold = " ", -- icon for reasoning fold
-        },
-        -- UI behavior
-        auto_scroll = true, -- auto-scroll as response streams
-        fold_context = true, -- fold context items to save space
-        fold_reasoning = true, -- fold reasoning output after streaming
-        show_reasoning = true, -- show reasoning output at all
-        show_context = true, -- show context from variables/slash commands
-        show_header_separator = false, -- show separators between headers
-        show_settings = false, -- show LLM settings at top
-        show_token_count = true, -- show token count for each response
-        show_tools_processing = true, -- show loading when tools execute
-        start_in_insert_mode = false, -- start in insert mode when opening
-        separator = "─", -- separator between messages
-        intro_message = "Welcome to CodeCompanion ✨! Press ? for options",
+        -- Diff window layout
 
-        -- Token count display customization
-        token_count = function(tokens, adapter)
-          return " (" .. tokens .. " tokens)"
-        end,
-
-        -- Debug window sizing
-        debug_window = {
-          width = vim.o.columns - 5,
-          height = vim.o.lines - 2,
-        },
         diff_window = {
+          layout = "float", -- Floating window
+          border = "rounded", -- Nice rounded borders
+          -- 80% width, centered
           width = function()
-            return math.min(120, vim.o.columns - 10)
+            return math.floor(vim.o.columns * 0.8)
           end,
+          -- 70% height, centered
           height = function()
-            return vim.o.lines - 4
+            return math.floor(vim.o.lines * 0.7)
+          end,
+          -- Center the window horizontally
+          col = function()
+            local width = math.floor(vim.o.columns * 0.8)
+            return math.floor((vim.o.columns - width) / 2)
+          end,
+          -- Center the window vertically
+          row = function()
+            local height = math.floor(vim.o.lines * 0.7)
+            return math.floor((vim.o.lines - height) / 2)
           end,
           opts = {
             number = true,
             relativenumber = false,
-          },
-        },
-        child_window = {
-          width = vim.o.columns - 5,
-          height = vim.o.lines - 2,
-          row = "center",
-          col = "center",
-          relative = "editor",
-          opts = {
+            cursorline = true,
             wrap = false,
-            number = false,
-            relativenumber = false,
+            signcolumn = "yes",
           },
         },
-        -- User and LLM role names
-        roles = {
-          llm = function(adapter)
-            return "CodeCompanion (" .. adapter.formatted_name .. ")"
-          end,
-          user = "Me",
-        },
+        intro_message = "Welcome to CodeCompanion ✨! Press ? for options",
       },
     },
+    -- AI strategy settings
+
     strategies = {
+      -- Chat strategy using Gemini
       chat = {
         adapter = "gemini",
+        variables = {
+          ["buffer"] = {
+            opts = {
+              default_params = "pin", -- or 'watch'
+            },
+          },
+        },
+        tools = {
+
+          editor = {
+            enabled = true,
+            opts = {
+              diff = {
+                enabled = true,
+                close_chat_at = 240,
+              },
+              auto_submit = false,
+              confirm = true,
+              requires_approval = true,
+            },
+          },
+          cmd_runner = {
+            enabled = true,
+          },
+          files = {
+            enabled = true,
+          },
+          rag = {
+            enabled = true,
+          },
+        },
       },
+
+      -- Inline strategy using Gemini
+
       inline = {
         adapter = "gemini",
       },
+      -- Command strategy using Gemini
+
       cmd = {
         adapter = "gemini",
       },
     },
+    -- Adapter configurations
+
     adapters = {
       http = {
+        -- Gemini HTTP adapter
+
         gemini = function()
           return require("codecompanion.adapters").extend("gemini", {
             env = {
@@ -116,7 +133,28 @@ return {
       },
     },
   },
+  -- Keybindings
+  config = function(_, opts)
+    require("codecompanion").setup(opts)
+
+    -- Set custom highlight groups for better visibility
+    vim.api.nvim_set_hl(0, "CodeCompanionDiffBorder", {
+      fg = "#00ffff", -- Bright cyan border
+      bg = "#1a1b26",
+      bold = true,
+    })
+
+    vim.api.nvim_set_hl(0, "CodeCompanionDiffBackground", {
+      bg = "#1f2335", -- Slightly lighter than main background
+    })
+  end,
   keys = {
     { "<leader>cp", "<cmd>CodeCompanionChat<cr>", mode = { "n", "v" }, desc = "CodeCompanion Actions" },
+    { "<leader>ci", "<cmd>CodeCompanion<cr>", mode = { "n", "v" }, desc = "CodeCompanion Inline" },
+    { "<leader>ct", "<cmd>CodeCompanionChat Toggle<cr>", mode = { "n", "v" }, desc = "Toggle Chat" },
+    { "<leader>cac", "<cmd>CodeCompanionActions<cr>", mode = { "n", "v" }, desc = "CodeCompanion Actions" },
+    { "<leader>cm", "<cmd>CodeCompanionActions<cr>", mode = { "n", "v" }, desc = "Change Model" },
   },
 }
+-- how comment works in lua
+-- This is how a Lua comment works
