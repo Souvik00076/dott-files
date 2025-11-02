@@ -64,6 +64,7 @@ keymap.set("n", "<C-w><down>", "<C-w>-")
 
 --ai
 vim.keymap.set({ "n", "v" }, "<leader>A", ":Gen<CR>", { noremap = true, silent = true }) -- Diagnostics
+
 keymap.set("n", "<C-j>", function()
   vim.diagnostic.goto_next()
 end, opts)

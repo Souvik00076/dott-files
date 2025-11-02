@@ -24,13 +24,13 @@
 --   },
 -- }
 
-return { "ellisonleao/gruvbox.nvim", priority = 1000, config = true, opts = ... }
--- return {
---   { "nyoom-engineering/oxocarbon.nvim" },
---   {
---     "LazyVim/LazyVim",
---     opts = {
---       colorscheme = "oxocarbon",
---     },
---   },
--- }
+--return { "ellisonleao/gruvbox.nvim", priority = 1000, config = true, opts = ... }
+return {
+  { "nyoom-engineering/oxocarbon.nvim" },
+  {
+    "LazyVim/LazyVim",
+    opts = {
+      colorscheme = "oxocarbon",
+    },
+  },
+}
