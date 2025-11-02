@@ -1,57 +1,67 @@
--- Configuration for the CodeCompanion Neovim plugin.
-
--- Main plugin configuration
-
 return {
   "olimorris/codecompanion.nvim",
-  -- Plugin dependencies
 
   dependencies = {
     "ravitemer/mcphub.nvim",
+    "j-hui/fidget.nvim",
   },
-  -- Plugin options
+  config = function()
+    require("codecompanion").setup({})
 
+    local ns_id = vim.api.nvim_create_namespace("codecompanion_progress")
+    local extmark_id = nil
+    local current_bufnr = nil
+
+    vim.api.nvim_create_autocmd({ "User" }, {
+      pattern = "CodeCompanionRequest*",
+      callback = function(request)
+        if request.match == "CodeCompanionRequestStarted" then
+          current_bufnr = vim.api.nvim_get_current_buf()
+          if vim.bo[current_bufnr].filetype == "codecompanion" then
+            local line_count = vim.api.nvim_buf_line_count(current_bufnr)
+
+            extmark_id = vim.api.nvim_buf_set_extmark(current_bufnr, ns_id, line_count - 1, 0, {
+              virt_text = { { "⏳ ", "Comment" } },
+            })
+          end
+        elseif request.match == "CodeCompanionRequestFinished" then
+          if current_bufnr and extmark_id then
+            vim.api.nvim_buf_del_extmark(current_bufnr, ns_id, extmark_id)
+            extmark_id = nil
+            current_bufnr = nil
+          end
+        end
+      end,
+    })
+  end,
   opts = {
-    -- Display related settings
 
     display = {
-      -- Diff display settings
 
       diff = {
         enabled = true,
       },
-      -- Chat display settings
 
       chat = {
-        show_settings = true,
-        -- Chat window layout
 
         window = {
-          layout = "float", -- Make chat window float too
           border = "rounded",
-          width = 0.8,
+          width = 0.5,
           height = 0.8,
           style = "minimal",
         },
-        -- Diff window layout
 
         diff_window = {
-          layout = "float", -- Floating window
-          border = "rounded", -- Nice rounded borders
-          -- 80% width, centered
           width = function()
             return math.floor(vim.o.columns * 0.8)
           end,
-          -- 70% height, centered
           height = function()
             return math.floor(vim.o.lines * 0.7)
           end,
-          -- Center the window horizontally
           col = function()
             local width = math.floor(vim.o.columns * 0.8)
             return math.floor((vim.o.columns - width) / 2)
           end,
-          -- Center the window vertically
           row = function()
             local height = math.floor(vim.o.lines * 0.7)
             return math.floor((vim.o.lines - height) / 2)
@@ -67,21 +77,11 @@ return {
         intro_message = "Welcome to CodeCompanion ✨! Press ? for options",
       },
     },
-    -- AI strategy settings
 
     strategies = {
-      -- Chat strategy using Gemini
       chat = {
         adapter = "gemini",
-        variables = {
-          ["buffer"] = {
-            opts = {
-              default_params = "pin", -- or 'watch'
-            },
-          },
-        },
         tools = {
-
           editor = {
             enabled = true,
             opts = {
@@ -106,23 +106,15 @@ return {
         },
       },
 
-      -- Inline strategy using Gemini
-
       inline = {
         adapter = "gemini",
       },
-      -- Command strategy using Gemini
-
       cmd = {
         adapter = "gemini",
       },
     },
-    -- Adapter configurations
-
     adapters = {
       http = {
-        -- Gemini HTTP adapter
-
         gemini = function()
           return require("codecompanion.adapters").extend("gemini", {
             env = {
@@ -133,28 +125,12 @@ return {
       },
     },
   },
-  -- Keybindings
-  config = function(_, opts)
-    require("codecompanion").setup(opts)
 
-    -- Set custom highlight groups for better visibility
-    vim.api.nvim_set_hl(0, "CodeCompanionDiffBorder", {
-      fg = "#00ffff", -- Bright cyan border
-      bg = "#1a1b26",
-      bold = true,
-    })
-
-    vim.api.nvim_set_hl(0, "CodeCompanionDiffBackground", {
-      bg = "#1f2335", -- Slightly lighter than main background
-    })
-  end,
   keys = {
     { "<leader>cp", "<cmd>CodeCompanionChat<cr>", mode = { "n", "v" }, desc = "CodeCompanion Actions" },
     { "<leader>ci", "<cmd>CodeCompanion<cr>", mode = { "n", "v" }, desc = "CodeCompanion Inline" },
     { "<leader>ct", "<cmd>CodeCompanionChat Toggle<cr>", mode = { "n", "v" }, desc = "Toggle Chat" },
     { "<leader>cac", "<cmd>CodeCompanionActions<cr>", mode = { "n", "v" }, desc = "CodeCompanion Actions" },
-    { "<leader>cm", "<cmd>CodeCompanionActions<cr>", mode = { "n", "v" }, desc = "Change Model" },
+    { "<leader>cm", "<cmd>CodeCompanionChat model<cr>", mode = { "n", "v" }, desc = "Change Model" },
   },
 }
--- how comment works in lua
--- This is how a Lua comment works
