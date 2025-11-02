@@ -10,6 +10,8 @@
 --     end,
 --   },
 -- }
+
+--End of solarized-osaka
 --
 -- return {
 --   -- add gruvbox
