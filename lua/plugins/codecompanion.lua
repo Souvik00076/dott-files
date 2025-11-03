@@ -5,8 +5,8 @@ return {
     "ravitemer/mcphub.nvim",
     "j-hui/fidget.nvim",
   },
-  config = function()
-    require("codecompanion").setup({})
+  config = function(_, opts)
+    require("codecompanion").setup(opts)
 
     local ns_id = vim.api.nvim_create_namespace("codecompanion_progress")
     local extmark_id = nil
@@ -91,7 +91,7 @@ return {
               },
               auto_submit = false,
               confirm = true,
-              requires_approval = true,
+              requires_approval = false,
             },
           },
           cmd_runner = {
