@@ -23,6 +23,9 @@ keymap.set("v", "<Leader>d", '"_d')
 keymap.set("v", "<Leader>D", '"_D')
 keymap.set("n", "<Leader>y", '"+y')
 keymap.set("n", "<Leader>p", '"p')
+
+-- Reload all buffers
+keymap.set("n", "<leader>br", "<cmd>bufdo e<cr>", { desc = "Reload all buffers", noremap = true, silent = true })
 -- Increment/decrement
 keymap.set("n", "+", "<C-a>")
 keymap.set("n", "-", "<C-x>")
