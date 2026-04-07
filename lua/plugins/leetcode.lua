@@ -10,6 +10,14 @@ return {
     "rcarriga/nvim-notify",
     "nvim-tree/nvim-web-devicons",
   },
+  keys = {
+    { "<leader>lr", "<cmd>Leet run<cr>", desc = "Leet Run" },
+    { "<leader>ls", "<cmd>Leet submit<cr>", desc = "Leet Submit" },
+    { "<leader>ll", "<cmd>Leet list<cr>", desc = "Leet List" },
+    { "<leader>ld", "<cmd>Leet daily<cr>", desc = "Leet Daily" },
+    { "<leader>lc", "<cmd>Leet console<cr>", desc = "Leet Console" },
+    { "<leader>lR", "<cmd>Leet reset<cr>", desc = "Leet Reset" },
+  },
   opts = {
     -- configuration goes here
     lang = "python3", -- change to your preferred language: cpp, java, javascript, typescript, rust, go, etc.
