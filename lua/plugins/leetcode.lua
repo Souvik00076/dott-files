@@ -34,14 +34,11 @@ return {
     plugins = {
       non_standalone = true,
     },
-
-    injector = { -- auto-inject code before/after (like snippets)
+    injector = {
       ["python3"] = {
-        before = true, -- use default
-      },
-      ["cpp"] = {
-        before = { "#include <bits/stdc++.h>", "using namespace std;" },
-        after = "int main() {}",
+        imports = function()
+          return {}
+        end,
       },
     },
     image_support = true,
