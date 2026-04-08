@@ -18,13 +18,8 @@ require("lazy").setup({
   spec = {
     { "LazyVim/LazyVim", import = "lazyvim.plugins" },
     { import = "plugins" },
-<<<<<<< Updated upstream
-    --add LazyVim and import its plugins
-    --import/override with your plugins
-=======
     -- add LazyVim and import its plugins
     -- import/override with your plugins
->>>>>>> Stashed changes
     {
       "LazyVim/LazyVim",
       import = "lazyvim.plugins",

@@ -38,6 +38,14 @@ return {
         name = "study",
         path = "~/personal/Computer-Science/",
       },
+      {
+        name = "clients",
+        path = "~/personal/Client-Projects/",
+      },
+      {
+        name = "todos",
+        path = "~/personal/Daily-Notes/",
+      },
     },
   },
 }
