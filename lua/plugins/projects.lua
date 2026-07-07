@@ -54,6 +54,14 @@ local function pick_project()
             return
           end
           vim.cmd.cd(vim.fn.fnameescape(entry.value))
+          -- re-root any open snacks explorer: its own DirChanged handler only
+          -- fires while the explorer window is focused, so it goes stale here
+          if package.loaded["snacks"] then
+            for _, p in ipairs(require("snacks.picker").get({ source = "explorer" })) do
+              p:set_cwd(entry.value)
+              p:find()
+            end
+          end
           vim.notify("cwd: " .. entry.value, vim.log.levels.INFO)
           require("telescope.builtin").find_files({ cwd = entry.value })
         end)
@@ -64,10 +72,23 @@ local function pick_project()
 end
 
 return {
-  -- the default snacks picker maps <leader>fp to "recent projects"; free it up
+  -- the default snacks picker maps <leader>fp to "recent projects"; free it up.
+  -- Also root the explorer at the cwd instead of the current buffer's root:
+  -- project.nvim keeps cwd on the file's project root anyway, and after a
+  -- project switch the old buffer would otherwise drag <leader>e back to the
+  -- previous repo. <leader>fe keeps the buffer-root behavior.
   {
     "folke/snacks.nvim",
-    keys = { { "<leader>fp", false } },
+    keys = {
+      { "<leader>fp", false },
+      {
+        "<leader>e",
+        function()
+          Snacks.explorer()
+        end,
+        desc = "Explorer Snacks (cwd)",
+      },
+    },
   },
 
   {
