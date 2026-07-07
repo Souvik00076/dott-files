@@ -1,17 +1,28 @@
--- Project switching: <leader>fp fuzzy-finds repo directories, cds into the
--- selection, and opens the file finder there.
+-- Project switching: <leader>fp fuzzy-finds repo directories (nested up to
+-- `max_depth` levels), cds into the selection, and opens the file finder there.
 -- Repos live directly under $HOME; edit `project_dirs` if that changes
 -- (e.g. { vim.fn.expand("~/projects") }).
 
 local project_dirs = { vim.fn.expand("~") }
+local max_depth = 4
+-- directories never worth cd-ing into; pruned from the scan entirely
+local ignore_dirs =
+  { ".*", "node_modules", "dist", "build", "target", "__pycache__", "venv", "coverage", "vendor" }
 
 local function list_projects()
+  local prune = {}
+  for i, name in ipairs(ignore_dirs) do
+    if i > 1 then
+      table.insert(prune, "-o")
+    end
+    vim.list_extend(prune, { "-name", name })
+  end
   local dirs = {}
   for _, base in ipairs(project_dirs) do
-    local found = vim.fn.systemlist({
-      "find", base, "-mindepth", "1", "-maxdepth", "1", "-type", "d", "-not", "-name", ".*",
-    })
-    vim.list_extend(dirs, found)
+    local cmd = { "find", base, "-mindepth", "1", "-maxdepth", tostring(max_depth), "(" }
+    vim.list_extend(cmd, prune)
+    vim.list_extend(cmd, { ")", "-prune", "-o", "-type", "d", "-print" })
+    vim.list_extend(dirs, vim.fn.systemlist(cmd))
   end
   table.sort(dirs)
   return dirs
@@ -30,7 +41,7 @@ local function pick_project()
       finder = finders.new_table({
         results = list_projects(),
         entry_maker = function(path)
-          local name = vim.fn.fnamemodify(path, ":t")
+          local name = vim.fn.fnamemodify(path, ":~")
           return { value = path, display = name, ordinal = name }
         end,
       }),
