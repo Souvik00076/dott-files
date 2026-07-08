@@ -53,15 +53,8 @@ local function pick_project()
           if not entry then
             return
           end
+          -- the DirChanged autocmd below re-roots any open explorer
           vim.cmd.cd(vim.fn.fnameescape(entry.value))
-          -- re-root any open snacks explorer: its own DirChanged handler only
-          -- fires while the explorer window is focused, so it goes stale here
-          if package.loaded["snacks"] then
-            for _, p in ipairs(require("snacks.picker").get({ source = "explorer" })) do
-              p:set_cwd(entry.value)
-              p:find()
-            end
-          end
           vim.notify("cwd: " .. entry.value, vim.log.levels.INFO)
           require("telescope.builtin").find_files({ cwd = entry.value })
         end)
@@ -74,9 +67,8 @@ end
 return {
   -- the default snacks picker maps <leader>fp to "recent projects"; free it up.
   -- Also root the explorer at the cwd instead of the current buffer's root:
-  -- project.nvim keeps cwd on the file's project root anyway, and after a
-  -- project switch the old buffer would otherwise drag <leader>e back to the
-  -- previous repo. <leader>fe keeps the buffer-root behavior.
+  -- after a project switch the old buffer would otherwise drag <leader>e back
+  -- to the previous repo. <leader>fe keeps the buffer-root behavior.
   {
     "folke/snacks.nvim",
     keys = {
@@ -100,12 +92,18 @@ return {
     },
   },
 
-  -- auto-cd to the detected project root whenever a file is opened
+  -- auto-cd to the detected project root when a file is first opened.
+  -- manual_mode disables project.nvim's own VimEnter/BufEnter autocmd, which
+  -- re-cd'd on EVERY buffer re-entry: after switching projects, merely
+  -- returning focus to an old buffer (closing the explorer, cancelling a
+  -- picker) silently dragged cwd back to the previous repo. We trigger the
+  -- same detection ourselves on BufReadPost/BufNewFile only, so explicit
+  -- :cd / <leader>fp switches stick until a file from another repo is opened.
   {
     "ahmedkhalf/project.nvim",
     event = "VeryLazy",
     opts = {
-      manual_mode = false,
+      manual_mode = true,
       detection_methods = { "lsp", "pattern" },
       patterns = { ".git", "package.json", "Cargo.toml", "go.mod", "pyproject.toml", "Makefile" },
       silent_chdir = true,
@@ -113,6 +111,32 @@ return {
     },
     config = function(_, opts)
       require("project_nvim").setup(opts)
+      local group = vim.api.nvim_create_augroup("my_projects", { clear = true })
+      -- VimEnter covers `nvim path/to/file` (BufReadPost fires too early then)
+      vim.api.nvim_create_autocmd({ "VimEnter", "BufReadPost", "BufNewFile" }, {
+        group = group,
+        nested = true, -- let the resulting cd fire DirChanged below
+        callback = function()
+          require("project_nvim.project").on_buf_enter()
+        end,
+      })
+      -- keep any open snacks explorer rooted at the cwd, however it changed;
+      -- its own handler only runs while the explorer window is focused
+      vim.api.nvim_create_autocmd("DirChanged", {
+        group = group,
+        callback = function()
+          if not package.loaded["snacks"] then
+            return
+          end
+          local cwd = vim.fs.normalize(vim.fn.getcwd())
+          for _, p in ipairs(require("snacks.picker").get({ source = "explorer" })) do
+            if vim.fs.normalize(p:cwd()) ~= cwd then
+              p:set_cwd(cwd)
+              p:find()
+            end
+          end
+        end,
+      })
       LazyVim.on_load("telescope.nvim", function()
         require("telescope").load_extension("projects")
       end)
